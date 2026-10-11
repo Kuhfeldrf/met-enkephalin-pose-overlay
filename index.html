@@ -1,0 +1,306 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Met-Enkephalin Pose Overlay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.4.2/3Dmol-min.js"></script>
+<style>
+/* Layout: stacked viewer over a measurement table; two columns above 900px. */
+:root{
+  --bg:#f4f5f3; --panel:#ffffff; --ink:#1b1f1d; --muted:#5d6763; --rule:#d8dcd8;
+  --viewer-bg:#eef0ed;
+  --exp:#b8860b; --haddock:#c2562c; --chai:#1f6f9e; --ptx:#7b4397;
+  --font-display:"IBM Plex Serif",Georgia,serif;
+  --font-body:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141816; --panel:#1c2220; --ink:#e7ebe8; --muted:#95a09b; --rule:#2f3735;
+  --viewer-bg:#101412;
+  --exp:#f2c14e; --haddock:#ef8354; --chai:#5ab3e8; --ptx:#c48ade;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#141816; --panel:#1c2220; --ink:#e7ebe8; --muted:#95a09b; --rule:#2f3735;
+  --viewer-bg:#101412;
+  --exp:#f2c14e; --haddock:#ef8354; --chai:#5ab3e8; --ptx:#c48ade;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);line-height:1.5;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:32px 56px}
+header{border-bottom:1px solid var(--rule);padding-bottom:20px;margin-bottom:24px}
+.eyebrow{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+h1{font-family:var(--font-display);font-weight:600;font-size:clamp(25px,4.4vw,36px);line-height:1.15;margin:0 0 10px;text-wrap:balance}
+.sub{margin:0;max-width:64ch;color:var(--muted);font-size:15px}
+h2{font-family:var(--font-display);font-weight:600;font-size:19px;margin:0 0 4px}
+.sec{margin-top:38px}
+.sec>p.lede{margin:0 0 16px;color:var(--muted);font-size:14px;max-width:70ch}
+.stage{display:grid;grid-template-columns:1fr;gap:18px}
+@media(min-width:900px){.stage{grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);align-items:start}}
+.viewbox{position:relative;background:var(--viewer-bg);border:1px solid var(--rule);border-radius:4px;aspect-ratio:1/1;max-width:100%;overflow:hidden}
+@media(min-width:900px){.viewbox{aspect-ratio:4/3}}
+#viewer{position:absolute;inset:0}
+.loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-size:12px;color:var(--muted);pointer-events:none}
+.side{min-width:0;display:flex;flex-direction:column;gap:16px}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:4px;padding:16px}
+.card h3{font-size:11px;font-family:var(--font-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 12px;font-weight:500}
+.tracks{display:flex;flex-direction:column;gap:2px}
+.track{display:grid;grid-template-columns:24px 1fr auto;align-items:center;gap:10px;padding:7px 6px;border:0;border-radius:3px;background:none;color:var(--ink);font:inherit;font-size:14px;text-align:left;cursor:pointer;width:100%}
+.track:hover{background:color-mix(in srgb,var(--ink) 6%,transparent)}
+.track:focus-visible{outline:2px solid var(--chai);outline-offset:1px}
+.swatch{width:20px;height:4px;border-radius:2px;background:var(--c);opacity:.28;transition:opacity .15s}
+.track[aria-pressed="true"] .swatch{opacity:1}
+.track .name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.track[aria-pressed="false"] .name,.track[aria-pressed="false"] .val{color:var(--muted);opacity:.65}
+.track .val{font-family:var(--font-mono);font-size:12px;font-variant-numeric:tabular-nums;color:var(--muted)}
+.opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--rule)}
+.opt{font-family:var(--font-mono);font-size:11px;letter-spacing:.04em;padding:6px 10px;border:1px solid var(--rule);border-radius:999px;background:none;color:var(--muted);cursor:pointer}
+.opt[aria-pressed="true"]{color:var(--ink);border-color:currentColor}
+.opt:focus-visible{outline:2px solid var(--chai);outline-offset:1px}
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{text-align:left;padding:9px 12px 9px 0;border-bottom:1px solid var(--rule);vertical-align:baseline}
+thead th{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:500}
+td.num,th.num{text-align:right;font-family:var(--font-mono);font-variant-numeric:tabular-nums;padding-right:0}
+tbody tr:last-child td{border-bottom:0}
+.meth{display:flex;align-items:baseline;gap:9px}
+.dot{width:9px;height:9px;border-radius:2px;background:var(--c);flex:none;transform:translateY(-1px)}
+.meth small{display:block;color:var(--muted);font-size:12px;font-family:var(--font-mono);margin-top:2px}
+.ref-row td{color:var(--muted)}
+.dev{display:flex;gap:3px;align-items:flex-end;height:22px}
+.dev i{width:7px;background:var(--c);border-radius:1px;opacity:.75;display:block}
+.notes{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:760px){.notes{grid-template-columns:1fr 1fr}}
+.note h3{font-family:var(--font-display);font-size:15px;font-weight:600;margin:0 0 6px}
+.note p{margin:0;font-size:14px;color:var(--muted);max-width:62ch}
+.note code{font-family:var(--font-mono);font-size:12.5px;color:var(--ink);word-break:break-word}
+.flag{border-left:3px solid var(--haddock);padding:2px 0 2px 14px}
+footer{margin-top:44px;padding-top:18px;border-top:1px solid var(--rule);font-family:var(--font-mono);font-size:11.5px;color:var(--muted);line-height:1.7}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">MOR pilot · pose validation</p>
+  <h1>Met-enkephalin against the experimental 8F7Q pose</h1>
+  <p class="sub">Four placements of YGGFM in the active-state &mu;-opioid receptor, superposed on the same receptor frame and measured against chain P of 8F7Q. Each predicted pose is the one its own method ranked first, chosen before any comparison to the experimental structure.</p>
+</header>
+
+<div class="stage">
+  <div class="viewbox">
+    <div id="viewer"></div>
+    <div class="loading" id="loading">loading coordinates…</div>
+  </div>
+
+  <div class="side">
+    <div class="card">
+      <h3>Poses</h3>
+      <div class="tracks" id="tracks"></div>
+      <div class="opts">
+        <button class="opt" id="opt-pocket" aria-pressed="true">Asp149 (D3.32)</button>
+        <button class="opt" id="opt-surface" aria-pressed="false">Pocket surface</button>
+        <button class="opt" id="opt-spin" aria-pressed="false">Spin</button>
+        <button class="opt" id="opt-reset" aria-pressed="false">Reset view</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Backbone RMSD · residues 1–5</h3>
+      <p style="margin:0;font-size:14px;color:var(--muted)">All three methods place the peptide in the orthosteric pocket within 2.6&nbsp;Å backbone RMSD of the experimental pose. Protenix is closest at <strong style="color:var(--ink);font-family:var(--font-mono)">1.73&nbsp;Å</strong>; its 25-model median is <strong style="color:var(--ink);font-family:var(--font-mono)">1.55&nbsp;Å</strong>, so the result does not depend on which sample was picked.</p>
+    </div>
+  </div>
+</div>
+
+<section class="sec">
+  <h2>Measurements</h2>
+  <p class="lede">RMSD is computed over residues 1–5 after superposing each model's receptor onto 8F7Q chain R by sequence alignment. The anchor distance is the Tyr1 &alpha;-amino nitrogen to the nearer Asp149 carboxylate oxygen, measured inside each model's own receptor.</p>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th class="num">Backbone</th>
+          <th class="num">All-heavy</th>
+          <th class="num">Anchor</th>
+          <th class="num">Receptor C&alpha;</th>
+          <th>Per-residue C&alpha; deviation</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</section>
+
+<section class="sec">
+  <h2>Provenance</h2>
+  <div class="notes">
+    <div class="note">
+      <h3>Reference</h3>
+      <p>8F7Q, active-state human MOR with &beta;-endorphin bound. Chain P residues 1–5 (YGGFM) are the experimental met-enkephalin pose. Released 2022-12-14, after the Protenix <code>base_default_v1.0.0</code> training cutoff of 2021-09-30, so this complex was not in training. DAMGO's 6DDF was, so the YGGF-in-pocket motif was learnable.</p>
+    </div>
+    <div class="note">
+      <h3>HADDOCK3</h3>
+      <p>Blind run: <code>ranair</code> ab initio, no orthosteric restraints, no superposition, 4000 rigidbody &rarr; flexref &rarr; emref. Pose <code>emref_67</code>, HADDOCK score &minus;114.2, AIR energy 0.</p>
+    </div>
+    <div class="note">
+      <h3>Chai-1</h3>
+      <p>Single-sequence with ESM embeddings, 5 seeds &times; 5 samples. Shown: seed 0, model 1, the top model by aggregate score (0.4187). Across all 25 models backbone RMSD ranges 1.33–6.04&nbsp;Å, median 2.24&nbsp;Å.</p>
+    </div>
+    <div class="note">
+      <h3>Protenix + MSA</h3>
+      <p>Paired and unpaired receptor MSA, 5 seeds &times; 5 samples, 3 recycles, 200 timesteps. Shown: seed 1, sample 0, top by ranking score (0.9484). Across all 25 models 1.24–4.39&nbsp;Å, median 1.55&nbsp;Å.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec">
+  <h2>Two things this figure does not show</h2>
+  <div class="notes">
+    <div class="note flag">
+      <h3>Every prediction over-tightens the salt bridge</h3>
+      <p>The experimental Tyr1 amine sits <strong style="color:var(--ink);font-family:var(--font-mono)">4.55&nbsp;Å</strong> from Asp149. All three predictions place it closer — 1.11, 2.45 and 2.55&nbsp;Å. These are energy-minimised or model-confident contacts, not measured physiological distances, and should not be quoted as such.</p>
+    </div>
+    <div class="note flag">
+      <h3>Recovering one pose is not a screen</h3>
+      <p>Met-enkephalin has a crystal structure to check against; a milk-derived candidate does not. Scoring on this pilot tracks global burial and peptide length rather than the D3.32 register: the best mis-registered HADDOCK pose scored &minus;70.0 and outranked 9 of 10 near-native poses, and co-folding confidence reaches AUROC 0.500 once length is controlled.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Receptor 8F7Q chain R, 287 residues · peptide models superposed by sequence-aligned C&alpha; · drag to rotate, scroll to zoom<br>
+  Sources: <code>results/02_cofold/met_enkephalin</code>, <code>results/02_cofold_ptx_real40/met_enkephalin</code>, <code>YGGFM_8f7q_MOR_docked_seed424242.pdb</code>
+</footer>
+</div>
+
+<script>
+const METHODS=[
+ {id:"experimental",name:"Experimental 8F7Q",note:"chain P, res 1–5",color:"--exp",hex:{l:"#b8860b",d:"#f2c14e"},file:"pep_experimental.pdb",
+  bb:null,heavy:null,anchor:4.55,rec:null,dev:[0,0,0,0,0],on:true},
+ {id:"haddock",name:"HADDOCK3 blind",note:"emref_67 · seed 424242",color:"--haddock",hex:{l:"#c2562c",d:"#ef8354"},file:"pep_haddock.pdb",
+  bb:2.56,heavy:4.40,anchor:2.55,rec:0.41,dev:[1.40,1.53,2.58,1.96,2.64],on:true},
+ {id:"chai",name:"Chai-1",note:"seed 0 · model 1",color:"--chai",hex:{l:"#1f6f9e",d:"#5ab3e8"},file:"pep_chai.pdb",
+  bb:2.28,heavy:2.64,anchor:1.11,rec:2.75,dev:[2.03,1.93,0.84,1.71,3.08],on:true},
+ {id:"protenix",name:"Protenix + MSA",note:"seed 1 · sample 0",color:"--ptx",hex:{l:"#7b4397",d:"#c48ade"},file:"pep_protenix.pdb",
+  bb:1.73,heavy:1.58,anchor:2.45,rec:2.82,dev:[0.51,1.02,1.26,1.41,1.71],on:true}
+];
+const MAXDEV=3.2, fmt=v=>v==null?"—":v.toFixed(2);
+
+function isDark(){
+  const a=document.documentElement.getAttribute("data-theme");
+  if(a==="dark")return true; if(a==="light")return false;
+  return matchMedia("(prefers-color-scheme: dark)").matches;
+}
+const hexOf=m=>isDark()?m.hex.d:m.hex.l;
+
+/* ---- side panel ---- */
+const tracks=document.getElementById("tracks");
+METHODS.forEach(m=>{
+  const b=document.createElement("button");
+  b.className="track"; b.type="button"; b.setAttribute("aria-pressed",String(m.on));
+  b.style.setProperty("--c",`var(${m.color})`);
+  b.innerHTML=`<span class="swatch"></span><span class="name">${m.name}</span>
+    <span class="val">${m.bb==null?"reference":m.bb.toFixed(2)+" Å"}</span>`;
+  b.addEventListener("click",()=>{m.on=!m.on;b.setAttribute("aria-pressed",String(m.on));render();});
+  tracks.appendChild(b);
+});
+
+/* ---- table ---- */
+const tbody=document.getElementById("tbody");
+METHODS.forEach(m=>{
+  const tr=document.createElement("tr");
+  if(m.bb==null)tr.className="ref-row";
+  const bars=m.dev.map(d=>`<i style="height:${Math.max(2,Math.round(d/MAXDEV*22))}px"></i>`).join("");
+  tr.innerHTML=`
+    <td><div class="meth"><span class="dot" style="--c:var(${m.color})"></span>
+      <span>${m.name}<small>${m.note}</small></span></div></td>
+    <td class="num">${m.bb==null?"reference":fmt(m.bb)}</td>
+    <td class="num">${fmt(m.heavy)}</td>
+    <td class="num">${fmt(m.anchor)}</td>
+    <td class="num">${fmt(m.rec)}</td>
+    <td><div class="dev" style="--c:var(${m.color})" title="Tyr1 Gly2 Gly3 Phe4 Met5">${bars}</div></td>`;
+  tbody.appendChild(tr);
+});
+
+/* ---- 3D ---- */
+let viewer=null, recModel=null, pepModels={}, spinning=false;
+const opts={pocket:true,surface:false};
+
+async function boot(){
+  if(!window.$3Dmol){document.getElementById("loading").textContent="3D viewer unavailable";return;}
+  viewer=$3Dmol.createViewer(document.getElementById("viewer"),{backgroundColor:isDark()?"#101412":"#eef0ed"});
+  try{
+    const names=["receptor_8f7q.pdb",...METHODS.map(m=>m.file)];
+    const texts=await Promise.all(names.map(n=>fetch(n).then(r=>{
+      if(!r.ok)throw new Error(n+" "+r.status); return r.text();})));
+    recModel=viewer.addModel(texts[0],"pdb");
+    METHODS.forEach((m,i)=>{pepModels[m.id]=viewer.addModel(texts[i+1],"pdb");});
+    document.getElementById("loading").hidden=true;
+    render(true);
+  }catch(e){
+    document.getElementById("loading").textContent="could not load coordinates";
+    console.error(e);
+  }
+}
+
+function render(initial){
+  if(!viewer)return;
+  viewer.setStyle({},{});
+  viewer.removeAllSurfaces();
+  viewer.removeAllLabels();
+  const recColor=isDark()?"#3c4a46":"#c3ccc6";
+  viewer.setStyle({model:recModel},{cartoon:{color:recColor,thickness:.28,opacity:.92,arrows:true}});
+  if(opts.pocket){
+    viewer.setStyle({model:recModel,resi:149},
+      {cartoon:{color:recColor,thickness:.28},stick:{radius:.13,colorscheme:isDark()?"greenCarbon":"greenCarbon"}});
+    viewer.addLabel("Asp149",{backgroundOpacity:.55,
+      backgroundColor:isDark()?"#0c100e":"#ffffff",fontColor:isDark()?"#e7ebe8":"#1b1f1d",
+      fontSize:11,borderThickness:0,inFront:true},{model:recModel,resi:149,atom:"CG"});
+  }
+  if(opts.surface){
+    viewer.addSurface($3Dmol.SurfaceType.VDW,
+      {opacity:.55,color:isDark()?"#212b28":"#dfe5e0"},
+      {model:recModel,resi:[149,150,153,235,238,295,299,302,324,328]});
+  }
+  METHODS.forEach(m=>{
+    const mod=pepModels[m.id]; if(!mod)return;
+    if(!m.on){viewer.setStyle({model:mod},{});return;}
+    viewer.setStyle({model:mod},{stick:{radius:.16,color:hexOf(m)},
+      sphere:{radius:.28,color:hexOf(m)}});
+  });
+  viewer.setBackgroundColor(isDark()?"#101412":"#eef0ed");
+  if(initial)focusPocket();
+  viewer.render();
+}
+
+function focusPocket(){
+  if(!viewer)return;
+  viewer.zoomTo({model:pepModels.experimental});
+  viewer.zoom(.55);
+  viewer.render();
+}
+
+/* ---- controls ---- */
+function toggle(btn,key){
+  btn.addEventListener("click",()=>{
+    opts[key]=!opts[key];
+    btn.setAttribute("aria-pressed",String(opts[key]));
+    render();
+  });
+}
+toggle(document.getElementById("opt-pocket"),"pocket");
+toggle(document.getElementById("opt-surface"),"surface");
+document.getElementById("opt-spin").addEventListener("click",e=>{
+  spinning=!spinning;
+  e.currentTarget.setAttribute("aria-pressed",String(spinning));
+  if(viewer)viewer.spin(spinning?"y":false);
+});
+document.getElementById("opt-reset").addEventListener("click",()=>focusPocket());
+
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>render());
+new MutationObserver(()=>render()).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+
+boot();
+</script>
+
+</body></html>
